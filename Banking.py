@@ -4,10 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import LabelEncoder
-from xgboost import XGBRegressor
+from xgboost import XGBClassifier
 from sqlalchemy import true
 #Load data into pandas for usage
-
 
 data = pd.read_csv('bank.csv')
 print(data.head(5))
@@ -95,7 +94,7 @@ plt.title='A graph showing the difference is transaction size for fraudulent and
 #No null values but several objects to deal with
 
 #Remove customer id
-new_data = data.drop(columns='customer')
+new_data = data.drop(columns=['customer', 'merchant'])
 #print(data.head(10))
 #print(data.info)
 
@@ -103,23 +102,25 @@ new_data = data.drop(columns='customer')
 le = LabelEncoder()
 new_data['age'] = le.fit_transform(new_data['age'])
 new_data['gender'] = le.fit_transform(new_data['gender'])
+#These two are interesting to know what to do with...
+new_data['zipcodeOri'] = le.fit_transform(new_data['zipcodeOri'])
+new_data['zipMerchant'] = le.fit_transform(new_data['zipMerchant'])
 
-#new_data['zipcodeOri'] = le.fit_transform(new_data['zipcodeOri'])
-#new_data['merchant'] = le.fit_transform(new_data['merchant'])
-#new_data['zipMerchant'] = le.fit_transform(new_data['zipMerchant'])
 new_data['category'] = le.fit_transform(new_data['category'])
 
 print(data['zipMerchant'].unique())
 print(new_data.head(10))
-# %% Machine learning algos
+# %% train/test split
 
-X = new_data.iloc[:, 0:7]
-Y = new_data.iloc[:, 8]
+X = new_data.iloc[:, 0:6]
+Y = new_data.iloc[:, 7]
 print(X)
 print(Y)
 
 train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.2)
 print(test_X)
-scores = cross_val_score(XGBRegressor(), train_X, train_Y, cv=5)
-print(scores)
+
+# %% XGB boost
+scores = cross_val_score(XGBClassifier(), train_X, train_Y, cv=5)
+print(np.mean(scores))
 # %%
